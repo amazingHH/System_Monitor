@@ -13,6 +13,7 @@
  * GNU General Public License for more details.
  *
 ***************************************************************/
+
 #ifndef _IPC_PROXY_H_
 #define _IPC_PROXY_H_
 
@@ -20,18 +21,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include "math.h"
+#include "IPC_Proxy_Base.h"
 #include "IPC_Common.h" 
 
-
-class Proxy_Basework {
-private:
-	Err_Type IPC_Rigester(void);
-	int Handler_arr[IPC_CLIENT_NUM] = {0};
-
+class IPC_Proxy : public Proxy_Basework{
 public:
-	Err_Type FAH_Send(int msgid,int who,char *msg);
-	Err_Type FAH_Recv(int msgid,int type,char out[]);
-	Err_Type Get_Handler(string FP);
+    Err_Type IPC_Bulk_Send(int msgid,int who,char *msg);
+    Err_Type IPC_Bulk_Rcv(int msgid,int who,char *msg);
+    Err_Type IPC_Despatch_Send(int msgid,int who,char *msg);
+    Err_Type IPC_Despatch_Rcv(int msgid,int who,char *msg);
+private:
+    Err_Type IPC_Message_Package(unsigned char * data);
+    Err_Type IPC_Message_Unpackage(unsigned char * data);
+
 };
 
 #endif
