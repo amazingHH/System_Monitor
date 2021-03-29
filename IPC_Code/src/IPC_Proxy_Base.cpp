@@ -24,7 +24,6 @@ HMI,
 NEEDLE,
 };
 
-
 Proxy_Basework::~Proxy_Basework()
 {
 	printf("~Proxy_Basework \n");
