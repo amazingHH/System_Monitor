@@ -61,7 +61,6 @@ public:
     ~IPC_Timer();
     Err_Type Timer_Register(int *handler);
     Err_Type Timer_Start(int handler, int duration);
-    Err_Type Timer_Check(int handler);
     Err_Type Timer_Stop(int handler);
     Timer_Eclapsed Timer_State_Check(int handler);
 

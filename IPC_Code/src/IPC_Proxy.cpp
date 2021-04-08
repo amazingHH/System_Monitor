@@ -19,3 +19,8 @@ Err_Type IPC_Proxy::IPC_Bulk_Send(int msgid,int who,char *msg)
 {
     return No_Err;
 }
+
+Err_Type IPC_Proxy::IPC_Bulk_Rcv(int msgid,int who,char *msg)
+{
+    return No_Err;
+}

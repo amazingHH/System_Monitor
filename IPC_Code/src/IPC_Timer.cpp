@@ -30,8 +30,13 @@ void * Timer_Main_Loop(void *arg)
             {
                 struct timeval end;
                 gettimeofday(&end,NULL);
-                if (((end.tv_sec-Timer_Array[i].m_start.tv_sec) * 10^6 + end.tv_usec - Timer_Array[i].m_start.tv_usec) > Timer_Array[i].m_duration)
+                int duration = ((end.tv_sec-Timer_Array[i].m_start.tv_sec) * 10^6 + end.tv_usec - Timer_Array[i].m_start.tv_usec)/(10^6);
+                printf(" i = %d, end.tv_sec = %d, Timer_Array[i].m_start.tv_sec = %d \n", i, end.tv_sec, Timer_Array[i].m_start.tv_sec);
+                printf(" i = %d, end.tv_usec = %ld, Timer_Array[i].m_start.tv_usec = %ld \n", i, end.tv_sec, Timer_Array[i].m_start.tv_sec);
+                // printf("duration is %d \n", end.tv_sec-Timer_Array[i].m_start.tv_sec);
+                if (duration >= Timer_Array[i].m_duration)
                 {
+                    printf("duration is %d, m_duration is %d \n", duration, Timer_Array[i].m_duration);
                     Timer_Array[i].m_eclapsed_state = ECLAPSED_YES;
                     Timer_Array[i].m_state = TIMER_STOP;
                     Timer_Array[i].m_duration = 0;
@@ -61,21 +66,37 @@ Err_Type IPC_Timer::Timer_Initial(void)
     for (i = 0; i < 100; i++)
     {
         Timer_Array[i].m_handler = BASE_LINE + i;
+        Timer_Array[i].m_state = TIMER_IDLE;
     }
+
     thread_err = pthread_create(&tid1, NULL, Timer_Main_Loop, NULL);
     return No_Err;
 }
 
 Err_Type IPC_Timer::Timer_Register(int *handler)
 {
+    Err_Type ret = No_Err;
+    printf("Timer_Array[%d].m_handler = %x \n",Timer_Index, Timer_Array[Timer_Index].m_handler);
     *handler = Timer_Array[Timer_Index].m_handler;
+    Timer_Index ++;
+    // printf("next Timer_Array[%d].m_handler = %x \n",Timer_Index, Timer_Array[Timer_Index].m_handler);
+    if (Timer_Index > 101)
+        ret = Err;
+    if (Timer_Index == 100)
+    {
+        printf("Be careful, there is only 1 timer left \n");
+    }
+    return ret;
 }
 
 
 Err_Type IPC_Timer::Timer_Start(int handler, int duration)
 {
     int i = 0;
+    Err_Type ret = No_Err;
+    printf("enter the timer start\n");
     pthread_mutex_lock(&m_Timer_Mutex);
+    printf("lock the critical area\n");
     for (i = 0; i < 100; i++)
     {
         if (Timer_Array[i].m_handler == handler)
@@ -87,7 +108,9 @@ Err_Type IPC_Timer::Timer_Start(int handler, int duration)
             break;
         }
     }
+    printf("unlock the critical area\n");
     pthread_mutex_unlock(&m_Timer_Mutex);
+    return ret;
 
 }
 
@@ -133,4 +156,22 @@ Timer_Eclapsed IPC_Timer::Timer_State_Check(int handler)
         }
     }
     return ret;
+}
+
+Err_Type IPC_Timer::Timer_Stop(int handler)
+{
+    int i = 0;
+    pthread_mutex_lock(&m_Timer_Mutex);
+    for (i = 0; i < 100; i++)
+    {
+        if (Timer_Array[i].m_handler == handler)
+        {
+            Timer_Array[i].m_duration = 0;
+            Timer_Array[i].m_state =  TIMER_STOP;
+            Timer_Array[i].m_eclapsed_state = ECLAPSED_IDEL;
+            // gettimeofday(&(Timer_Array[i].m_start),NULL);
+            break;
+        }
+    }
+    pthread_mutex_unlock(&m_Timer_Mutex);
 }
